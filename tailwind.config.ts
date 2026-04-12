@@ -24,6 +24,8 @@ export default {
         foreground: "hsl(var(--foreground))",
         success: "hsl(var(--success))",
         warning: "hsl(var(--warning))",
+        "notion-peach": "hsl(var(--notion-peach))",
+        "notion-blue": "hsl(var(--notion-blue))",
         "surface-elevated": "hsl(var(--surface-elevated))",
         "surface-subtle": "hsl(var(--surface-subtle))",
         primary: {
