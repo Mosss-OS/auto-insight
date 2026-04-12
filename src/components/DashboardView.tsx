@@ -2,10 +2,10 @@ import { Wallet, TrendingUp, Database, FileText, Users, Zap } from "lucide-react
 import { agentStats } from "@/data/mockReport";
 
 const StatCard = ({ label, value, icon: Icon, accent = false }: { label: string; value: string; icon: React.ElementType; accent?: boolean }) => (
-  <div className="p-5 rounded-lg border border-border bg-surface-elevated">
+  <div className="p-5 rounded-xl border border-border bg-surface-elevated">
     <div className="flex items-center justify-between mb-3">
       <span className="label-uppercase">{label}</span>
-      <Icon className={`h-4 w-4 ${accent ? "text-primary" : "text-muted-foreground"}`} />
+      <Icon className={`h-4 w-4 ${accent ? "text-accent" : "text-muted-foreground"}`} />
     </div>
     <p className={`text-2xl font-bold tracking-tight ${accent ? "gradient-text" : "text-foreground"}`}>{value}</p>
   </div>
@@ -43,7 +43,7 @@ const DashboardView = () => {
               <span className="text-xs text-muted-foreground w-8 font-medium">{week.week}</span>
               <div className="flex-1 flex items-center gap-1 h-6">
                 <div
-                  className="h-5 rounded-sm bg-primary/20 transition-all"
+                  className="h-5 rounded-sm bg-accent/20 transition-all"
                   style={{ width: `${(week.earned / maxEarned) * 100}%`, minWidth: week.earned > 0 ? "4px" : "0" }}
                 />
                 <div
@@ -59,7 +59,7 @@ const DashboardView = () => {
         </div>
         <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-sm bg-primary/20" />
+            <div className="w-2.5 h-2.5 rounded-sm bg-accent/20" />
             Earned
           </div>
           <div className="flex items-center gap-1.5">
@@ -86,19 +86,19 @@ const DashboardView = () => {
       </div>
 
       {/* Autonomy Loop */}
-      <div className="border border-border rounded-lg p-6 bg-surface-subtle">
+      <div className="border border-border rounded-xl p-6 bg-secondary">
         <div className="flex items-center gap-2 mb-3">
-          <Zap className="h-4 w-4 text-primary" />
+          <Zap className="h-4 w-4 text-accent" />
           <span className="text-sm font-semibold text-foreground">Autonomy Loop</span>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">Earn</span>
+          <span className="px-2 py-0.5 rounded-full bg-accent/10 text-accent text-xs font-medium">Earn</span>
           <span>→</span>
           <span className="px-2 py-0.5 rounded-full bg-warning/10 text-warning text-xs font-medium">Buy Data</span>
           <span>→</span>
           <span className="px-2 py-0.5 rounded-full bg-foreground/10 text-foreground text-xs font-medium">Generate</span>
           <span>→</span>
-          <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">Publish</span>
+          <span className="px-2 py-0.5 rounded-full bg-accent/10 text-accent text-xs font-medium">Publish</span>
         </div>
         <p className="text-xs text-muted-foreground mt-3">
           The agent autonomously earns USDC from readers, purchases data API access from the Locus catalog, and generates the next weekly report.
