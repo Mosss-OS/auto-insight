@@ -13,12 +13,19 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        success: "hsl(var(--success))",
+        warning: "hsl(var(--warning))",
+        "surface-elevated": "hsl(var(--surface-elevated))",
+        "surface-subtle": "hsl(var(--surface-subtle))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
