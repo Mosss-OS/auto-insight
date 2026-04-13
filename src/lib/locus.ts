@@ -63,12 +63,47 @@ export const initializeCheckout = async (config: PaymentConfig): Promise<{ sessi
 /**
  * Process a USDC payment
  * In demo mode, this simulates a successful payment after 2 seconds
+ * When real API key is provided, uses actual Locus API
  */
 export const processPayment = async (config: PaymentConfig): Promise<PaymentResult> => {
+  const apiKey = import.meta.env.VITE_LOCUS_API_KEY;
+  
+  // If we have a real API key, try to use the actual Locus API
+  if (apiKey && apiKey.startsWith('sk_')) {
+    try {
+      const response = await fetch('https://api.locusapi.io/v1/payments', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: config.amount || PAYMENT_AMOUNT,
+          currency: config.currency || PAYMENT_CURRENCY,
+          recipient: config.recipientAddress,
+          metadata: { product: 'auto-insight-report' },
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        config.onSuccess?.(data.txHash);
+        return { success: true, txHash: data.txHash };
+      } else {
+        const error = await response.json();
+        config.onError?.(new Error(error.message || 'Payment failed'));
+        return { success: false, error: error.message };
+      }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Payment failed';
+      config.onError?.(new Error(error));
+      return { success: false, error };
+    }
+  }
+  
+  // Demo mode fallback
   return new Promise((resolve) => {
-    // Simulate payment processing
     setTimeout(() => {
-      // In production, this would verify the transaction on-chain
       const success = true;
       const txHash = `0x${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`;
       
