@@ -18,6 +18,7 @@ Venture funding in Web3 rebounded with $890 million deployed across 42 deals. In
 
 Looking ahead, market participants are watching the Federal Reserve's upcoming rate decision and its impact on stablecoin yields. The convergence of traditional finance rails with onchain infrastructure continues to accelerate, suggesting the next quarter will be decisive for institutional adoption trajectories.`,
   previewWordCount: 100,
+  topic: "DeFi",
 };
 
 export const pastReports = [
@@ -28,6 +29,19 @@ export const pastReports = [
   { id: "report-2026-w10", week: "Week 10", title: "Tokenized Treasuries Cross $15B as Yields Compress", earnings: 11.00 },
 ];
 
+export const transactionHistory = [
+  { id: "tx-1", type: "earning", amount: 0.50, description: "Report unlocked by reader", date: "Apr 12, 2026 14:32", source: "Locus Checkout" },
+  { id: "tx-2", type: "spending", amount: 0.04, description: "CoinGecko Market Data API", date: "Apr 12, 2026 14:31", source: "Locus API Catalog", apiCalls: 12 },
+  { id: "tx-3", type: "spending", amount: 0.03, description: "Crypto News Feed", date: "Apr 12, 2026 14:31", source: "Locus API Catalog", apiCalls: 8 },
+  { id: "tx-4", type: "earning", amount: 0.50, description: "Report unlocked by reader", date: "Apr 12, 2026 13:45", source: "Locus Checkout" },
+  { id: "tx-5", type: "earning", amount: 0.50, description: "Report unlocked by reader", date: "Apr 12, 2026 11:20", source: "Locus Checkout" },
+  { id: "tx-6", type: "spending", amount: 0.05, description: "DeFiLlama TVL Data", date: "Apr 12, 2026 11:19", source: "Locus API Catalog", apiCalls: 15 },
+  { id: "tx-7", type: "earning", amount: 0.50, description: "Report unlocked by reader", date: "Apr 11, 2026 22:15", source: "Locus Checkout" },
+  { id: "tx-8", type: "spending", amount: 0.02, description: "Messari Research API", date: "Apr 11, 2026 22:14", source: "Locus API Catalog", apiCalls: 5 },
+  { id: "tx-9", type: "earning", amount: 0.50, description: "Report unlocked by reader", date: "Apr 11, 2026 18:30", source: "Locus Checkout" },
+  { id: "tx-10", type: "spending", amount: 0.01, description: "Anthropic Claude AI", date: "Apr 11, 2026 18:29", source: "Locus API Catalog", apiCalls: 1 },
+];
+
 export const agentStats = {
   totalEarned: 53.00,
   totalSpent: 18.40,
@@ -36,10 +50,10 @@ export const agentStats = {
   totalReaders: 106,
   dataApiCalls: 247,
   spending: [
-    { name: "CoinGecko Pro API", amount: 5.00, calls: 84 },
-    { name: "NewsAPI Fintech Feed", amount: 4.20, calls: 63 },
-    { name: "Messari Research API", amount: 6.00, calls: 42 },
-    { name: "DeFiLlama Premium", amount: 3.20, calls: 58 },
+    { name: "CoinGecko Pro API", amount: 5.00, calls: 84, provider: "Locus API Catalog" },
+    { name: "NewsAPI Fintech Feed", amount: 4.20, calls: 63, provider: "Locus API Catalog" },
+    { name: "Messari Research API", amount: 6.00, calls: 42, provider: "Locus API Catalog" },
+    { name: "DeFiLlama Premium", amount: 3.20, calls: 58, provider: "Locus API Catalog" },
   ],
   weeklyEarnings: [
     { week: "W10", earned: 11.00, spent: 3.40 },
@@ -50,3 +64,12 @@ export const agentStats = {
     { week: "W15", earned: 0.00, spent: 2.90 },
   ],
 };
+
+export const TOPICS = [
+  { id: "defi", name: "DeFi", description: "Decentralized finance protocols and yield strategies" },
+  { id: "rwa", name: "RWA", description: "Real-world asset tokenization" },
+  { id: "stablecoins", name: "Stablecoins", description: "Stablecoin developments and adoption" },
+  { id: "ai-crypto", name: "AI x Crypto", description: "AI agents in blockchain ecosystems" },
+  { id: "bitcoin", name: "Bitcoin Ecosystem", description: "Bitcoin DeFi and infrastructure" },
+  { id: "cross-border", name: "Cross-border Payments", description: "Global payment rails and remittances" },
+];

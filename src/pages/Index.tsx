@@ -14,7 +14,7 @@ const Index = () => {
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-accent" />
-            <span className="font-semibold text-foreground tracking-tight">ContentAgent</span>
+            <span className="font-semibold text-foreground tracking-tight">AutoInsight</span>
           </Link>
           <nav className="flex items-center gap-6 text-sm">
             <button
