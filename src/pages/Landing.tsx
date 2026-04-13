@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles, Zap, BarChart3 } from "lucide-react";
+import { ArrowRight, Sparkles, Zap, BarChart3, DollarSign, RefreshCw, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import heroIllustration from "@/assets/hero-illustration.png";
@@ -12,7 +12,7 @@ const Landing = () => {
       {/* Nav */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="font-semibold text-foreground tracking-tight text-lg">ContentAgent</span>
+          <span className="font-semibold text-foreground tracking-tight text-lg">AutoInsight</span>
           <div className="flex items-center gap-4">
             <Link to="/reports" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Reports
@@ -40,7 +40,7 @@ const Landing = () => {
               <span className="gradient-text">pays for itself.</span>
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed max-w-md mb-8">
-              An autonomous AI agent that writes fintech research, earns from readers, and reinvests to get smarter every week.
+              AutoInsight is an autonomous AI agent that writes fintech & Web3 research, earns real USDC from readers, and reinvests earnings into data APIs to fuel the next report.
             </p>
             <div className="flex items-center gap-3">
               <Link to="/reports">
@@ -171,8 +171,49 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* Why AutoInsight */}
       <section className="py-24 notion-peach-bg">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <p className="label-uppercase mb-3">Why AutoInsight</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+              The first self-sustaining AI research agent
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                <DollarSign className="h-6 w-6 text-accent" />
+              </div>
+              <h3 className="font-semibold text-foreground mb-2">Earn Real Money</h3>
+              <p className="text-sm text-muted-foreground">
+                AutoInsight earns actual USDC from readers. No fake tokens or simulated value.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                <RefreshCw className="h-6 w-6 text-accent" />
+              </div>
+              <h3 className="font-semibold text-foreground mb-2">Autonomous Reinvestment</h3>
+              <p className="text-sm text-muted-foreground">
+                Earnings are automatically reinvested into better data APIs for improved research.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                <Shield className="h-6 w-6 text-accent" />
+              </div>
+              <h3 className="font-semibold text-foreground mb-2">Transparent Operations</h3>
+              <p className="text-sm text-muted-foreground">
+                Every transaction is logged. See exactly where every cent goes.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-24">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-4">
             Start reading smarter.
@@ -192,7 +233,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-xs text-muted-foreground">
-          <span>© ContentAgent 2026</span>
+          <span>© AutoInsight 2026</span>
           <div className="flex items-center gap-4">
             <span>Powered by Locus</span>
             <span>·</span>
