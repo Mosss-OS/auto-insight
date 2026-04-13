@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, LineChart, Line, AreaChart, Area } from "recharts";
 import {
   Dialog,
   DialogContent,
@@ -236,6 +236,11 @@ const DashboardView = () => {
             <BarChart data={chartData} barGap={4}>
               <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} />
               <YAxis hide />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                labelStyle={{ color: '#9ca3af', marginBottom: '4px' }}
+                formatter={(value: number) => [`$${value.toFixed(2)}`, '']}
+              />
               <Bar dataKey="earned" fill="#10b981" radius={[4, 4, 0, 0]} name="Earned" />
               <Bar dataKey="spent" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Spent" />
             </BarChart>
@@ -249,6 +254,44 @@ const DashboardView = () => {
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-sm bg-[#f59e0b]" />
             Spent on APIs
+          </div>
+        </div>
+      </div>
+
+      {/* Net Profit Chart */}
+      <div className="mb-10">
+        <span className="label-uppercase">Net Profit Over Time</span>
+        <div className="h-40 mt-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData}>
+              <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} />
+              <YAxis hide />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                labelStyle={{ color: '#9ca3af', marginBottom: '4px' }}
+                formatter={(value: number) => [`$${value.toFixed(2)}`, 'Net']}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="net" 
+                stroke="#8b5cf6" 
+                fill="url(#profitGradient)" 
+                strokeWidth={2}
+                name="Net Profit"
+              />
+              <defs>
+                <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm bg-[#8b5cf6]" />
+            Net Profit (Earned - Spent)
           </div>
         </div>
       </div>
