@@ -214,8 +214,34 @@ export const selectApisToPurchase = (topic: string, maxBudget: number): ApiPurch
  * Fetch market data using purchased APIs
  */
 export const fetchMarketData = async (apis: ApiPurchase[]): Promise<Record<string, unknown>> => {
-  // In production, this would call the actual APIs
-  // For demo, return mock data
+  const apiKey = import.meta.env.VITE_LOCUS_API_KEY;
+  
+  // Use real Locus API if available
+  if (apiKey && apiKey.startsWith('sk_')) {
+    try {
+      const results = await Promise.all(
+        apis.map(async (api) => {
+          const response = await fetch(`https://api.locusapi.io/v1/catalog/${api.id}`, {
+            headers: { 'Authorization': `Bearer ${apiKey}` },
+          });
+          if (response.ok) {
+            return { api: api.name, data: await response.json() };
+          }
+          return { api: api.name, data: null };
+        })
+      );
+      
+      return {
+        timestamp: new Date().toISOString(),
+        apisUsed: apis.map(a => a.name),
+        apiResults: results,
+      };
+    } catch (err) {
+      console.error('Locus API error:', err);
+    }
+  }
+  
+  // Demo mode - return mock data
   return {
     timestamp: new Date().toISOString(),
     apisUsed: apis.map(a => a.name),
