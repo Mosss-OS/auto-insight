@@ -63,37 +63,46 @@ export interface GeneratedReport {
  */
 export const generateReport = async (options: GenerateReportOptions): Promise<GeneratedReport> => {
   const { topic, previousReportContext } = options;
+  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
   
-  // In production, this would call the actual Claude API
-  // const response = await anthropic.messages.create({
-  //   model: 'claude-3-5-sonnet-20241022',
-  //   max_tokens: 1024,
-  //   messages: [{
-  //     role: 'user',
-  //     content: `You are AutoInsight, an AI agent that generates weekly fintech and Web3 research reports.
-  // 
-  // Generate a ~500-word research report about "${topic}".
-  // 
-  // Include:
-  // - Key developments and news from the past week
-  // - Market data and statistics
-  // - Regulatory updates if relevant
-  // - Future outlook and predictions
-  // - At least 3 specific data points or statistics
-  // 
-  // Format with clear paragraphs. Do not use markdown formatting.
-  // 
-  // ${previousReportContext ? `Context from previous report:\n${previousReportContext}` : ''}
-  // 
-  // Return in JSON format:
-  // {
-  //   "title": "Report title",
-  //   "summary": "2-3 sentence summary",
-  //   "content": "Full report content (~500 words, separated by double newlines)",
-  //   "sources": ["source1", "source2", "source3"]
-  // }`,
-  //   }],
-  // });
+  // Use real Claude API if key is provided
+  if (apiKey && apiKey.startsWith('sk-')) {
+    try {
+      const client = new Anthropic({ apiKey });
+      const response = await client.messages.create({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1024,
+        messages: [{
+          role: 'user',
+          content: `You are AutoInsight, an AI agent that generates weekly fintech and Web3 research reports. Generate a ~500-word research report about "${topic}". Include key developments, market data, and regulatory updates. Return in JSON format: {"title": "...", "summary": "...", "content": "...", "sources": ["..."]}`,
+        }],
+      });
+      
+      const text = response.content[0].type === 'text' ? response.content[0].text : '';
+      try {
+        const parsed = JSON.parse(text);
+        return {
+          title: parsed.title || `${topic} Weekly Report`,
+          content: parsed.content || text,
+          summary: parsed.summary || '',
+          sources: parsed.sources || [],
+          week: `Week ${Math.ceil((Date.now() - new Date('2026-01-01').getTime()) / (7 * 24 * 60 * 60 * 1000))}`,
+          date: new Date().toISOString(),
+        };
+      } catch {
+        return {
+          title: `${topic} Weekly Report`,
+          content: text,
+          summary: text.slice(0, 200),
+          sources: [],
+          week: `Week ${Math.ceil((Date.now() - new Date('2026-01-01').getTime()) / (7 * 24 * 60 * 60 * 1000))}`,
+          date: new Date().toISOString(),
+        };
+      }
+    } catch (err) {
+      console.error('Claude API error:', err);
+    }
+  }
   
   // For demo, return a mock report
   const now = new Date();
