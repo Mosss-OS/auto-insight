@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { Wallet, TrendingUp, Database, FileText, Users, Zap, Play, ChevronDown, ChevronUp, RefreshCw, Settings } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Wallet, TrendingUp, Database, FileText, Users, Zap, Play, ChevronDown, ChevronUp, RefreshCw, Settings, Save } from "lucide-react";
 import { useAgentStore } from "@/store/agentStore";
 import { generateReport, selectApisToPurchase, TOPICS } from "@/lib/agent";
+import { saveAgentState, loadAgentState, clearAgentState } from "@/lib/persistence";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
@@ -91,6 +92,50 @@ const DashboardView = () => {
 
   const [currentWeek, setCurrentWeek] = useState(15);
   const [showSettings, setShowSettings] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+  const handleSave = useCallback(() => {
+    const weeklyStats = weeklyEarnings.map(w => ({
+      week: typeof w.week === 'string' ? parseInt(w.week.replace('W', ''), 10) : w.week,
+      earned: w.earned,
+      spent: w.spent,
+    }));
+    
+    const state = {
+      walletBalance: balance,
+      totalEarned,
+      totalSpent,
+      reportsGenerated,
+      totalReaders,
+      dataApiCalls,
+      weeklyEarnings: weeklyStats,
+      transactionHistory: transactionHistory.map(t => ({
+        id: t.id,
+        type: t.type,
+        amount: t.amount,
+        description: t.description,
+        date: t.date,
+        source: t.source,
+        apiCalls: t.apiCalls,
+      })),
+      currentWeek: currentWeek + 1,
+      lastUpdated: new Date().toISOString(),
+    };
+    saveAgentState(state as unknown as Parameters<typeof saveAgentState>[0]);
+    setLastSaved(new Date());
+  }, [balance, totalEarned, totalSpent, reportsGenerated, totalReaders, dataApiCalls, weeklyEarnings, transactionHistory, currentWeek]);
+
+  useEffect(() => {
+    const saved = loadAgentState();
+    if (saved) {
+      console.log('Loaded saved state from', saved.lastUpdated);
+    }
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(handleSave, 30000);
+    return () => clearInterval(interval);
+  }, [handleSave]);
 
   const maxEarned = Math.max(...weeklyEarnings.map(w => w.earned), 1);
   const netProfit = totalEarned - totalSpent;
