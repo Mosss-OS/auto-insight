@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Lock, CheckCircle, ArrowRight, Clock, Download, Sparkles, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Lock, CheckCircle, ArrowRight, Clock, Download, Sparkles, Loader2, PartyPopper } from "lucide-react";
 import { useAgentStore } from "@/store/agentStore";
 import { TOPICS } from "@/lib/agent";
 import { processPayment, PAYMENT_AMOUNT } from "@/lib/locus";
@@ -20,7 +20,16 @@ const ReportView = () => {
   const [paying, setPaying] = useState(false);
   const [showTopicSelector, setShowTopicSelector] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (paymentSuccess) {
+      setShowConfetti(true);
+      const timer = setTimeout(() => setShowConfetti(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [paymentSuccess]);
 
   if (!currentReport) {
     return (
@@ -136,10 +145,19 @@ const ReportView = () => {
           height={800}
           className="w-full h-64 object-contain"
         />
-        {paymentSuccess && (
-          <div className="absolute inset-0 bg-accent/20 flex items-center justify-center animate-pulse">
-            <div className="bg-accent text-accent-foreground px-6 py-3 rounded-full font-semibold">
+        {showConfetti ? (
+          <div className="absolute inset-0 bg-accent/30 flex items-center justify-center animate-in fade-in zoom-in">
+            <div className="bg-accent text-accent-foreground px-8 py-4 rounded-full font-bold text-xl shadow-lg animate-bounce">
+              <Sparkles className="inline h-5 w-5 mr-2" />
               Payment Successful!
+              <Sparkles className="inline h-5 w-5 ml-2" />
+            </div>
+          </div>
+        ) : !isUnlocked && (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-center pb-8">
+            <div className="bg-background/90 backdrop-blur text-foreground px-6 py-3 rounded-full font-semibold shadow-lg">
+              <Lock className="inline h-4 w-4 mr-2" />
+              Unlock Full Report
             </div>
           </div>
         )}
@@ -248,12 +266,17 @@ const ReportView = () => {
                   <Button
                     onClick={handlePay}
                     disabled={paying}
-                    className="rounded-full px-6 h-10 text-sm font-medium"
+                    className={`rounded-full px-6 h-10 text-sm font-medium transition-all ${paymentSuccess ? 'bg-accent hover:bg-accent/90' : ''}`}
                   >
                     {paying ? (
                       <>
                         <Clock className="h-3.5 w-3.5 mr-2 animate-spin" />
                         Confirming payment...
+                      </>
+                    ) : paymentSuccess ? (
+                      <>
+                        <PartyPopper className="h-3.5 w-3.5 mr-2 animate-bounce" />
+                        Unlocked!
                       </>
                     ) : (
                       <>
