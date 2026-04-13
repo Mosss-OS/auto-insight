@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { loadAgentState, saveAgentState, clearAgentState, PersistedState } from '@/lib/persistence';
 
 export interface Transaction {
   id: string;
