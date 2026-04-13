@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Lock, CheckCircle, ArrowRight, Clock, Download, Sparkles, Loader2, PartyPopper } from "lucide-react";
 import { useAgentStore } from "@/store/agentStore";
 import { TOPICS } from "@/lib/agent";
@@ -21,7 +21,13 @@ const ReportView = () => {
   const [showTopicSelector, setShowTopicSelector] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(!currentReport);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsLoading(!currentReport);
+  }, [currentReport]);
 
   useEffect(() => {
     if (paymentSuccess) {
@@ -30,6 +36,13 @@ const ReportView = () => {
       return () => clearTimeout(timer);
     }
   }, [paymentSuccess]);
+
+  useEffect(() => {
+    if (paymentError) {
+      const timer = setTimeout(() => setPaymentError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [paymentError]);
 
   if (!currentReport) {
     return (
@@ -46,6 +59,7 @@ const ReportView = () => {
 
   const handlePay = async () => {
     setPaying(true);
+    setPaymentError(null);
     
     try {
       const result = await processPayment({
@@ -57,6 +71,7 @@ const ReportView = () => {
           console.log('Payment successful:', txHash);
         },
         onError: (error) => {
+          setPaymentError(error.message);
           console.error('Payment failed:', error);
         },
       });
@@ -68,8 +83,12 @@ const ReportView = () => {
         addEarning(PAYMENT_AMOUNT, `Report unlocked: ${currentReport.title}`);
         
         setTimeout(() => setPaymentSuccess(false), 3000);
+      } else if (result.error) {
+        setPaymentError(result.error);
       }
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Payment failed';
+      setPaymentError(message);
       console.error('Payment error:', error);
     } finally {
       setPaying(false);
