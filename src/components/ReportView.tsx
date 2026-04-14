@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Lock, CheckCircle, ArrowRight, Clock, Download, Sparkles, Loader2, PartyPopper } from "lucide-react";
 import { useAgentStore } from "@/store/agentStore";
 import { TOPICS } from "@/lib/agent";
+import { reportsByTopic } from "@/data/mockReport";
 import { processPayment, PAYMENT_AMOUNT } from "@/lib/locus";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,9 @@ const ReportView = () => {
     currentReport, 
     unlockReport, 
     addEarning, 
-    selectedTopic 
+    selectedTopic,
+    setSelectedTopic,
+    setCurrentReport
   } = useAgentStore();
   
   const [isUnlocked, setIsUnlocked] = useState(currentReport?.isUnlocked || false);
@@ -196,7 +199,18 @@ Unlock Full Report
             {TOPICS.map(topic => (
               <button
                 key={topic.id}
-                onClick={() => setShowTopicSelector(false)}
+                onClick={() => {
+                  setShowTopicSelector(false);
+                  setSelectedTopic(topic.name);
+                  const report = reportsByTopic[topic.name];
+                  if (report) {
+                    setCurrentReport({
+                      ...report,
+                      isUnlocked: false,
+                    });
+                    setIsUnlocked(false);
+                  }
+                }}
                 className={`p-3 rounded-lg border text-left transition-all hover:border-accent ${
                   displayTopic === topic.name 
                     ? "border-accent bg-accent/5" 

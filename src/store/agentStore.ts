@@ -1,8 +1,6 @@
 import { create } from 'zustand';
-<<<<<<< HEAD
-import { loadAgentState, saveAgentState, clearAgentState, PersistedState } from '@/lib/persistence';
-=======
->>>>>>> origin/feature/repo-description-issue-17
+
+const SUPABASE_URL = 'https://ipaiccxjspnzazquknrg.supabase.co';
 
 export interface Transaction {
   id: string;
@@ -40,7 +38,7 @@ export interface Report {
 }
 
 interface AgentState {
-  // Wallet
+  // Wallet - loaded from Supabase
   balance: number;
   totalEarned: number;
   totalSpent: number;
@@ -65,10 +63,15 @@ interface AgentState {
   isGenerating: boolean;
   agentLogs: string[];
   
+  // Data loading
+  isLoading: boolean;
+  dataError: string | null;
+  
   // Actions
+  loadDataFromSupabase: () => Promise<void>;
   setBalance: (balance: number) => void;
-  addEarning: (amount: number, description: string) => void;
-  addSpending: (amount: number, description: string, source: string, apiCalls?: number) => void;
+  addEarning: (amount: number, description: string) => Promise<void>;
+  addSpending: (amount: number, description: string, source: string, apiCalls?: number) => Promise<void>;
   setCurrentReport: (report: Report) => void;
   unlockReport: (reportId: string) => void;
   addPastReport: (report: Report) => void;
@@ -81,85 +84,156 @@ interface AgentState {
   reset: () => void;
 }
 
-const initialReport: Report = {
-  id: "report-2026-w15",
-  week: "Week 15, 2026",
-  date: "April 7–12, 2026",
-  title: "DeFi Yields Stabilize as RWA Tokenization Hits $18B TVL",
-  summary: "This week's fintech and Web3 landscape saw significant developments across decentralized finance, real-world asset tokenization, and cross-border payment infrastructure.",
-  content: `The fintech and Web3 landscape experienced a pivotal week as several converging trends reshaped market dynamics. Real-world asset (RWA) tokenization crossed $18 billion in total value locked, driven primarily by tokenized U.S. Treasuries and corporate bonds on Ethereum and Polygon. BlackRock's BUIDL fund alone surpassed $3.2 billion, signaling sustained institutional appetite for onchain yield products.
-
-DeFi yields showed signs of stabilization after months of compression. Aave V3 on Ethereum settled at 4.2% APY for USDC lending, while newer protocols on Base and Arbitrum offered 6-8% through innovative liquidity mining strategies. Analysts note this equilibrium suggests the sector is maturing beyond speculative farming.
-
-Cross-border payments saw major infrastructure upgrades. Ripple's partnership with three Southeast Asian central banks entered its pilot phase, processing $140 million in settlement volume during the first five days. Meanwhile, Circle launched USDC natively on five additional chains, bringing its total chain footprint to 19.
-
-The regulatory front brought mixed signals. The EU's MiCA framework completed its transition period, with 47 crypto-asset service providers now fully licensed. In contrast, the U.S. stablecoin bill faced delays in Senate committee, though bipartisan support remains strong. Singapore's MAS issued updated guidelines for tokenized fund structures, establishing clearer pathways for institutional participation.
-
-AI-powered trading agents gained traction in DeFi. Protocols like Autonolas and Olas reported a 340% increase in agent-executed transactions, primarily in arbitrage and liquidity provision. This trend raises questions about market microstructure as autonomous agents become significant market participants.
-
-Venture funding in Web3 rebounded with $890 million deployed across 42 deals. Infrastructure plays dominated, with zero-knowledge proof companies and cross-chain messaging protocols attracting the largest rounds. Notable raises included a $120 million Series B for a ZK-rollup platform and $85 million for a decentralized identity provider.
-
-Looking ahead, market participants are watching the Federal Reserve's upcoming rate decision and its impact on stablecoin yields. The convergence of traditional finance rails with onchain infrastructure continues to accelerate, suggesting the next quarter will be decisive for institutional adoption trajectories.`,
+// Default initial report
+const getDefaultReport = (topic: string = 'DeFi'): Report => ({
+  id: `report-${Date.now()}`,
+  week: `Week ${Math.ceil((Date.now() - new Date('2026-01-01').getTime()) / (7 * 24 * 60 * 60 * 1000))}, 2026`,
+  date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+  title: 'Loading research report...',
+  summary: 'Generating fresh insights with AI...',
+  content: '',
   previewWordCount: 100,
-  topic: "DeFi",
+  topic,
   isUnlocked: false,
-};
-
-const initialPastReports: Report[] = [
-  { id: "report-2026-w14", week: "Week 14", date: "March 31–April 5, 2026", title: "Stablecoin Supply Hits All-Time High at $220B", summary: "Stablecoin market cap reaches new milestones", content: "", previewWordCount: 100, topic: "Stablecoins", isUnlocked: true },
-  { id: "report-2026-w13", week: "Week 13", date: "March 24–30, 2026", title: "Base Surpasses Arbitrum in Daily Active Addresses", summary: "Layer 2 competition intensifies", content: "", previewWordCount: 100, topic: "DeFi", isUnlocked: true },
-  { id: "report-2026-w12", week: "Week 12", date: "March 17–23, 2026", title: "EU MiCA Enforcement Begins — Market Impact Analysis", summary: "Regulatory clarity arrives in Europe", content: "", previewWordCount: 100, topic: "Regulatory", isUnlocked: true },
-  { id: "report-2026-w11", week: "Week 11", date: "March 10–16, 2026", title: "ZK-Proof Costs Drop 60% with New Proving Systems", summary: "Zero-knowledge technology advances", content: "", previewWordCount: 100, topic: "DeFi", isUnlocked: true },
-  { id: "report-2026-w10", week: "Week 10", date: "March 3–9, 2026", title: "Tokenized Treasuries Cross $15B as Yields Compress", summary: "RWA adoption accelerates", content: "", previewWordCount: 100, topic: "RWA", isUnlocked: true },
-];
-
-const initialTransactionHistory: Transaction[] = [
-  { id: "tx-1", type: "earning", amount: 0.50, description: "Report unlocked by reader", date: "Apr 12, 2026 14:32", source: "Locus Checkout" },
-  { id: "tx-2", type: "spending", amount: 0.04, description: "CoinGecko Market Data API", date: "Apr 12, 2026 14:31", source: "Locus API Catalog", apiCalls: 12 },
-  { id: "tx-3", type: "spending", amount: 0.03, description: "Crypto News Feed", date: "Apr 12, 2026 14:31", source: "Locus API Catalog", apiCalls: 8 },
-  { id: "tx-4", type: "earning", amount: 0.50, description: "Report unlocked by reader", date: "Apr 12, 2026 13:45", source: "Locus Checkout" },
-  { id: "tx-5", type: "earning", amount: 0.50, description: "Report unlocked by reader", date: "Apr 12, 2026 11:20", source: "Locus Checkout" },
-  { id: "tx-6", type: "spending", amount: 0.05, description: "DeFiLlama TVL Data", date: "Apr 12, 2026 11:19", source: "Locus API Catalog", apiCalls: 15 },
-  { id: "tx-7", type: "earning", amount: 0.50, description: "Report unlocked by reader", date: "Apr 11, 2026 22:15", source: "Locus Checkout" },
-  { id: "tx-8", type: "spending", amount: 0.02, description: "Messari Research API", date: "Apr 11, 2026 22:14", source: "Locus API Catalog", apiCalls: 5 },
-  { id: "tx-9", type: "earning", amount: 0.50, description: "Report unlocked by reader", date: "Apr 11, 2026 18:30", source: "Locus Checkout" },
-  { id: "tx-10", type: "spending", amount: 0.01, description: "Anthropic Claude AI", date: "Apr 11, 2026 18:29", source: "Locus API Catalog", apiCalls: 1 },
-];
+});
 
 export const useAgentStore = create<AgentState>((set, get) => ({
-  // Initial state
-  balance: 34.60,
-  totalEarned: 53.00,
-  totalSpent: 18.40,
-  reportsGenerated: 6,
-  totalReaders: 106,
-  dataApiCalls: 247,
+  // Initial loading state
+  isLoading: true,
+  dataError: null,
+  
+  // Initial empty state
+  balance: 0,
+  totalEarned: 0,
+  totalSpent: 0,
+  reportsGenerated: 0,
+  totalReaders: 0,
+  dataApiCalls: 0,
   weeklyEarnings: [
-    { week: "W10", earned: 11.00, spent: 3.40 },
-    { week: "W11", earned: 6.50, spent: 2.80 },
-    { week: "W12", earned: 15.00, spent: 3.20 },
-    { week: "W13", earned: 8.00, spent: 3.00 },
-    { week: "W14", earned: 12.50, spent: 3.10 },
-    { week: "W15", earned: 0.00, spent: 2.90 },
+    { week: "W1", earned: 0, spent: 0 },
+    { week: "W2", earned: 0, spent: 0 },
+    { week: "W3", earned: 0, spent: 0 },
+    { week: "W4", earned: 0, spent: 0 },
+    { week: "W5", earned: 0, spent: 0 },
+    { week: "W6", earned: 0, spent: 0 },
   ],
-  spending: [
-    { name: "CoinGecko Pro API", amount: 5.00, calls: 84, provider: "Locus API Catalog" },
-    { name: "NewsAPI Fintech Feed", amount: 4.20, calls: 63, provider: "Locus API Catalog" },
-    { name: "Messari Research API", amount: 6.00, calls: 42, provider: "Locus API Catalog" },
-    { name: "DeFiLlama Premium", amount: 3.20, calls: 58, provider: "Locus API Catalog" },
-  ],
-  transactionHistory: initialTransactionHistory,
-  currentReport: initialReport,
-  pastReports: initialPastReports,
+  spending: [],
+  transactionHistory: [],
+  currentReport: getDefaultReport(),
+  pastReports: [],
   maxWeeklyBudget: 5.00,
   selectedTopic: null,
   isGenerating: false,
   agentLogs: [],
 
-  // Actions
+  // Load data from Supabase
+  loadDataFromSupabase: async () => {
+    set({ isLoading: true, dataError: null });
+    
+    try {
+      const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNzh43tQw45WN8FtJE9Ks-Kf35Go';
+      
+      // Fetch wallet data
+      const walletRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/wallet?select=*&limit=1`,
+        { headers: { 'apikey': anonKey, 'Authorization': `Bearer ${anonKey}` } }
+      );
+      
+      // Fetch recent transactions
+      const txRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/transactions?order=created_at.desc&limit=20`,
+        { headers: { 'apikey': anonKey, 'Authorization': `Bearer ${anonKey}` } }
+      );
+      
+      // Fetch reports
+      const reportsRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/reports?order=created_at.desc&limit=10`,
+        { headers: { 'apikey': anonKey, 'Authorization': `Bearer ${anonKey}` } }
+      );
+
+      let walletData = { balance: 34.60, total_earned: 53.00, total_spent: 18.40, total_readers: 106, total_api_calls: 247 };
+      let transactions: any[] = [];
+      let reports: any[] = [];
+
+      if (walletRes.ok) {
+        const wData = await walletRes.json();
+        if (wData.length > 0) walletData = wData[0];
+      }
+      
+      if (txRes.ok) transactions = await txRes.json();
+      if (reportsRes.ok) reports = await reportsRes.json();
+
+      // Transform transactions
+      const transactionHistory: Transaction[] = transactions.map((tx: any) => ({
+        id: tx.id,
+        type: tx.type,
+        amount: tx.amount,
+        description: tx.description || '',
+        date: new Date(tx.created_at).toLocaleString(),
+        source: tx.source || 'Locus',
+        apiCalls: tx.api_calls || 0,
+      }));
+
+      // Transform reports
+      const pastReports: Report[] = reports.map((r: any) => ({
+        id: r.id,
+        week: r.week || 'Week',
+        date: new Date(r.date).toLocaleDateString(),
+        title: r.title,
+        summary: r.summary || '',
+        content: r.content || '',
+        previewWordCount: 100,
+        topic: r.topic,
+        isUnlocked: r.is_unlocked || false,
+      }));
+
+      // Calculate spending from transactions
+      const spendingMap = new Map<string, ApiSpending>();
+      transactions.filter((tx: any) => tx.type === 'spending').forEach((tx: any) => {
+        const existing = spendingMap.get(tx.description);
+        if (existing) {
+          existing.amount += tx.amount;
+          existing.calls += tx.api_calls || 1;
+        } else {
+          spendingMap.set(tx.description, {
+            name: tx.description || 'API',
+            amount: tx.amount,
+            calls: tx.api_calls || 1,
+            provider: tx.source || 'Locus API Catalog',
+          });
+        }
+      });
+
+      set({
+        balance: walletData.balance,
+        totalEarned: walletData.total_earned,
+        totalSpent: walletData.total_spent,
+        totalReaders: walletData.total_readers,
+        dataApiCalls: walletData.total_api_calls,
+        reportsGenerated: reports.length,
+        transactionHistory,
+        pastReports,
+        spending: Array.from(spendingMap.values()),
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error('Failed to load from Supabase:', error);
+      set({ 
+        isLoading: false, 
+        dataError: 'Using offline data',
+        // Keep default demo values as fallback
+        balance: 34.60,
+        totalEarned: 53.00,
+        totalSpent: 18.40,
+        totalReaders: 106,
+        dataApiCalls: 247,
+      });
+    }
+  },
+
   setBalance: (balance) => set({ balance }),
   
-  addEarning: (amount, description) => {
+  addEarning: async (amount, description) => {
     const tx: Transaction = {
       id: `tx-${Date.now()}`,
       type: 'earning',
@@ -168,6 +242,8 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       date: new Date().toLocaleString(),
       source: 'Locus Checkout',
     };
+    
+    // Update local state immediately
     set((state) => ({
       balance: state.balance + amount,
       totalEarned: state.totalEarned + amount,
@@ -177,9 +253,58 @@ export const useAgentStore = create<AgentState>((set, get) => ({
         i === arr.length - 1 ? { ...w, earned: w.earned + amount } : w
       ),
     }));
+
+    // Sync to Supabase in background
+    try {
+      const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNzh43tQw45WN8FtJE9Ks-Kf35Go';
+      
+      await fetch(`${SUPABASE_URL}/rest/v1/transactions`, {
+        method: 'POST',
+        headers: {
+          'apikey': anonKey,
+          'Authorization': `Bearer ${anonKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'earning',
+          amount,
+          description,
+          source: 'Locus Checkout',
+          status: 'confirmed',
+        }),
+      });
+
+      // Update wallet
+      const walletRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/wallet?select=id,balance,total_earned,total_readers&limit=1`,
+        { headers: { 'apikey': anonKey, 'Authorization': `Bearer ${anonKey}` } }
+      );
+      const walletData = await walletRes.json();
+      if (walletData.length > 0) {
+        await fetch(
+          `${SUPABASE_URL}/rest/v1/wallet?id=eq.${walletData[0].id}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'apikey': anonKey,
+              'Authorization': `Bearer ${anonKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              balance: walletData[0].balance + amount,
+              total_earned: walletData[0].total_earned + amount,
+              total_readers: walletData[0].total_readers + 1,
+              last_updated: new Date().toISOString(),
+            }),
+          }
+        );
+      }
+    } catch (e) {
+      console.error('Failed to sync earning to Supabase:', e);
+    }
   },
   
-  addSpending: (amount, description, source, apiCalls = 1) => {
+  addSpending: async (amount, description, source, apiCalls = 1) => {
     const tx: Transaction = {
       id: `tx-${Date.now()}`,
       type: 'spending',
@@ -189,6 +314,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       source,
       apiCalls,
     };
+    
     set((state) => ({
       balance: state.balance - amount,
       totalSpent: state.totalSpent + amount,
@@ -201,6 +327,29 @@ export const useAgentStore = create<AgentState>((set, get) => ({
         s.name === description ? { ...s, amount: s.amount + amount, calls: s.calls + apiCalls } : s
       ),
     }));
+
+    // Sync to Supabase in background
+    try {
+      const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNzh43tQw45WN8FtJE9Ks-Kf35Go';
+      
+      await fetch(`${SUPABASE_URL}/rest/v1/transactions`, {
+        method: 'POST',
+        headers: {
+          'apikey': anonKey,
+          'Authorization': `Bearer ${anonKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'spending',
+          amount,
+          description,
+          source,
+          status: 'confirmed',
+        }),
+      });
+    } catch (e) {
+      console.error('Failed to sync spending to Supabase:', e);
+    }
   },
   
   setCurrentReport: (report) => set({ currentReport: report }),
@@ -223,38 +372,35 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       reportsGenerated: state.reportsGenerated + 1,
       weeklyEarnings: [
         ...state.weeklyEarnings.slice(1),
-        { week: `W${15 + state.reportsGenerated - 5}`, earned: 0, spent: 0 },
+        { week: `W${state.reportsGenerated + 1}`, earned: 0, spent: 0 },
       ],
     }));
   },
   
-  reset: () => set({
-    balance: 34.60,
-    totalEarned: 53.00,
-    totalSpent: 18.40,
-    reportsGenerated: 6,
-    totalReaders: 106,
-    dataApiCalls: 247,
-    weeklyEarnings: [
-      { week: "W10", earned: 11.00, spent: 3.40 },
-      { week: "W11", earned: 6.50, spent: 2.80 },
-      { week: "W12", earned: 15.00, spent: 3.20 },
-      { week: "W13", earned: 8.00, spent: 3.00 },
-      { week: "W14", earned: 12.50, spent: 3.10 },
-      { week: "W15", earned: 0.00, spent: 2.90 },
-    ],
-    spending: [
-      { name: "CoinGecko Pro API", amount: 5.00, calls: 84, provider: "Locus API Catalog" },
-      { name: "NewsAPI Fintech Feed", amount: 4.20, calls: 63, provider: "Locus API Catalog" },
-      { name: "Messari Research API", amount: 6.00, calls: 42, provider: "Locus API Catalog" },
-      { name: "DeFiLlama Premium", amount: 3.20, calls: 58, provider: "Locus API Catalog" },
-    ],
-    transactionHistory: initialTransactionHistory,
-    currentReport: initialReport,
-    pastReports: initialPastReports,
-    maxWeeklyBudget: 5.00,
-    selectedTopic: null,
-    isGenerating: false,
-    agentLogs: [],
-  }),
+  reset: () => {
+    set({
+      balance: 0,
+      totalEarned: 0,
+      totalSpent: 0,
+      reportsGenerated: 0,
+      totalReaders: 0,
+      dataApiCalls: 0,
+      weeklyEarnings: [
+        { week: "W1", earned: 0, spent: 0 },
+        { week: "W2", earned: 0, spent: 0 },
+        { week: "W3", earned: 0, spent: 0 },
+        { week: "W4", earned: 0, spent: 0 },
+        { week: "W5", earned: 0, spent: 0 },
+        { week: "W6", earned: 0, spent: 0 },
+      ],
+      spending: [],
+      transactionHistory: [],
+      currentReport: getDefaultReport(),
+      pastReports: [],
+      maxWeeklyBudget: 5.00,
+      selectedTopic: null,
+      isGenerating: false,
+      agentLogs: [],
+    });
+  },
 }));

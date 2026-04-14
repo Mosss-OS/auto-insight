@@ -4,11 +4,5 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm install",
-  "devCommand": "npm run dev",
-  "env": {
-    "VITE_LOCUS_API_KEY": "@locus-api-key",
-    "VITE_LOCUS_CHECKOUT_PUBLISHABLE_KEY": "@locus-checkout-key",
-    "VITE_LOCUS_WALLET_ADDRESS": "@locus-wallet-address",
-    "VITE_ANTHROPIC_API_KEY": "@anthropic-api-key"
-  }
+  "devCommand": "npm run dev"
 }

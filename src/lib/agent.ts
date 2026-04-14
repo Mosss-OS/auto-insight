@@ -2,16 +2,12 @@
  * AutoInsight Agent Service
  * 
  * Handles autonomous agent operations:
- * - Report generation with Claude
+ * - Report generation with Groq
  * - API purchases from Locus catalog
  * - Wallet balance management
  */
 
-import Anthropic from '@anthropic-ai/sdk';
-
-const anthropic = new Anthropic({
-  apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY || 'demo-key',
-});
+const GROQ_API_BASE = 'https://api.groq.com/openai/v1';
 
 export interface ReportTopic {
   id: string;
@@ -59,27 +55,36 @@ export interface GeneratedReport {
 }
 
 /**
- * Generate a research report using Claude
+ * Generate a research report
  */
 export const generateReport = async (options: GenerateReportOptions): Promise<GeneratedReport> => {
-  const { topic, previousReportContext } = options;
-<<<<<<< HEAD
-  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+  const { topic } = options;
+  const apiKey = import.meta.env.VITE_GROQ_API_KEY;
   
-  // Use real Claude API if key is provided
-  if (apiKey && apiKey.startsWith('sk-')) {
+  if (apiKey) {
     try {
-      const client = new Anthropic({ apiKey });
-      const response = await client.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 1024,
-        messages: [{
-          role: 'user',
-          content: `You are AutoInsight, an AI agent that generates weekly fintech and Web3 research reports. Generate a ~500-word research report about "${topic}". Include key developments, market data, and regulatory updates. Return in JSON format: {"title": "...", "summary": "...", "content": "...", "sources": ["..."]}`,
-        }],
+      const response = await fetch(`${GROQ_API_BASE}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [{
+            role: 'system',
+            content: 'You are AutoInsight, an AI agent that generates weekly fintech and Web3 research reports. Return valid JSON only, no markdown formatting.'
+          }, {
+            role: 'user',
+            content: `Generate a ~500-word research report about "${topic}". Include key developments, market data, and regulatory updates. Return JSON format: {"title": "...", "summary": "...", "content": "...", "sources": ["..."]}`
+          }],
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.5,
+          max_completion_tokens: 1024,
+        }),
       });
       
-      const text = response.content[0].type === 'text' ? response.content[0].text : '';
+      const data = await response.json();
+      const text = data.choices?.[0]?.message?.content || '';
       try {
         const parsed = JSON.parse(text);
         return {
@@ -101,42 +106,9 @@ export const generateReport = async (options: GenerateReportOptions): Promise<Ge
         };
       }
     } catch (err) {
-      console.error('Claude API error:', err);
+      console.error('Groq API error:', err);
     }
   }
-=======
-  
-  // In production, this would call the actual Claude API
-  // const response = await anthropic.messages.create({
-  //   model: 'claude-3-5-sonnet-20241022',
-  //   max_tokens: 1024,
-  //   messages: [{
-  //     role: 'user',
-  //     content: `You are AutoInsight, an AI agent that generates weekly fintech and Web3 research reports.
-  // 
-  // Generate a ~500-word research report about "${topic}".
-  // 
-  // Include:
-  // - Key developments and news from the past week
-  // - Market data and statistics
-  // - Regulatory updates if relevant
-  // - Future outlook and predictions
-  // - At least 3 specific data points or statistics
-  // 
-  // Format with clear paragraphs. Do not use markdown formatting.
-  // 
-  // ${previousReportContext ? `Context from previous report:\n${previousReportContext}` : ''}
-  // 
-  // Return in JSON format:
-  // {
-  //   "title": "Report title",
-  //   "summary": "2-3 sentence summary",
-  //   "content": "Full report content (~500 words, separated by double newlines)",
-  //   "sources": ["source1", "source2", "source3"]
-  // }`,
-  //   }],
-  // });
->>>>>>> origin/feature/repo-description-issue-17
   
   // For demo, return a mock report
   const now = new Date();
@@ -248,39 +220,7 @@ export const selectApisToPurchase = (topic: string, maxBudget: number): ApiPurch
  * Fetch market data using purchased APIs
  */
 export const fetchMarketData = async (apis: ApiPurchase[]): Promise<Record<string, unknown>> => {
-<<<<<<< HEAD
-  const apiKey = import.meta.env.VITE_LOCUS_API_KEY;
-  
-  // Use real Locus API if available
-  if (apiKey && apiKey.startsWith('sk_')) {
-    try {
-      const results = await Promise.all(
-        apis.map(async (api) => {
-          const response = await fetch(`https://api.locusapi.io/v1/catalog/${api.id}`, {
-            headers: { 'Authorization': `Bearer ${apiKey}` },
-          });
-          if (response.ok) {
-            return { api: api.name, data: await response.json() };
-          }
-          return { api: api.name, data: null };
-        })
-      );
-      
-      return {
-        timestamp: new Date().toISOString(),
-        apisUsed: apis.map(a => a.name),
-        apiResults: results,
-      };
-    } catch (err) {
-      console.error('Locus API error:', err);
-    }
-  }
-  
-  // Demo mode - return mock data
-=======
-  // In production, this would call the actual APIs
   // For demo, return mock data
->>>>>>> origin/feature/repo-description-issue-17
   return {
     timestamp: new Date().toISOString(),
     apisUsed: apis.map(a => a.name),

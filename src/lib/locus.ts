@@ -1,21 +1,20 @@
 /**
- * Locus Payment Integration
+ * AutoInsight Locus Payment Integration via Supabase Edge Functions
  * 
- * This module handles USDC micropayments via Locus Checkout.
- * In production, you would use the actual @paywithlocus/checkout SDK.
+ * Handles USDC micropayments via Supabase Edge Functions
+ * to bypass CORS restrictions and keep API keys secure.
  * 
- * Setup:
- * 1. Get your Locus API keys from https://locusapi.io
- * 2. Set VITE_LOCUS_CHECKOUT_PUBLISHABLE_KEY in your .env
- * 3. Set your recipient wallet address
+ * Edge Functions:
+ * - create-checkout-session: Creates checkout session
+ * - process-payment: Agent payment processing
  */
 
-const LOCUS_CHECKOUT_URL = 'https://checkout.locusapi.io';
-const PAYMENT_AMOUNT = 0.50; // USDC
+const SUPABASE_URL = 'https://ipaiccxjspnzazquknrg.supabase.co';
+const PAYMENT_AMOUNT = 0.50;
 const PAYMENT_CURRENCY = 'USDC';
 
 export interface PaymentConfig {
-  publishableKey: string;
+  publishableKey?: string;
   recipientAddress: string;
   amount?: number;
   currency?: string;
@@ -30,161 +29,155 @@ export interface PaymentResult {
   error?: string;
 }
 
-/**
- * Initialize Locus Checkout session
- * In production, this would use the actual Locus Checkout SDK
- */
-export const initializeCheckout = async (config: PaymentConfig): Promise<{ sessionId: string; checkoutUrl: string }> => {
-  const { publishableKey, recipientAddress, amount = PAYMENT_AMOUNT, currency = PAYMENT_CURRENCY } = config;
-  
-  // In production, this would call the Locus API to create a checkout session
-  // const response = await fetch('https://api.locusapi.io/v1/checkout/sessions', {
-  //   method: 'POST',
-  //   headers: {
-  //     'Authorization': `Bearer ${publishableKey}`,
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify({
-  //     amount,
-  //     currency,
-  //     recipient: recipientAddress,
-  //     metadata: { product: 'auto-insight-report' },
-  //   }),
-  // });
-  // const data = await response.json();
-  
-  // For demo purposes, we return a mock session
-  return {
-    sessionId: `session_${Date.now()}`,
-    checkoutUrl: `${LOCUS_CHECKOUT_URL}/pay?amount=${amount}&currency=${currency}&recipient=${recipientAddress}`,
-  };
-};
+export interface CheckoutSession {
+  sessionId: string;
+  checkoutUrl: string;
+  expiresAt?: string;
+}
 
 /**
- * Process a USDC payment
- * In demo mode, this simulates a successful payment after 2 seconds
-<<<<<<< HEAD
- * When real API key is provided, uses actual Locus API
+ * Create a checkout session via Supabase Edge Function
  */
-export const processPayment = async (config: PaymentConfig): Promise<PaymentResult> => {
-  const apiKey = import.meta.env.VITE_LOCUS_API_KEY;
-  
-  // If we have a real API key, try to use the actual Locus API
-  if (apiKey && apiKey.startsWith('sk_')) {
-    try {
-      const response = await fetch('https://api.locusapi.io/v1/payments', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: config.amount || PAYMENT_AMOUNT,
-          currency: config.currency || PAYMENT_CURRENCY,
-          recipient: config.recipientAddress,
-          metadata: { product: 'auto-insight-report' },
-        }),
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        config.onSuccess?.(data.txHash);
-        return { success: true, txHash: data.txHash };
-      } else {
-        const error = await response.json();
-        config.onError?.(new Error(error.message || 'Payment failed'));
-        return { success: false, error: error.message };
-      }
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Payment failed';
-      config.onError?.(new Error(error));
-      return { success: false, error };
+export const createCheckoutSession = async (
+  amount: number = PAYMENT_AMOUNT,
+  description: string = 'AutoInsight Report Access'
+): Promise<CheckoutSession> => {
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout-session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: amount.toString(),
+        currency: PAYMENT_CURRENCY,
+        description,
+        metadata: { product: 'auto-insight-report' },
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create checkout session');
     }
+
+    const data = await response.json();
+    return {
+      sessionId: data.sessionId,
+      checkoutUrl: data.checkoutUrl,
+      expiresAt: data.expiresAt,
+    };
+  } catch (error) {
+    console.error('Failed to create checkout session:', error);
+    return {
+      sessionId: `demo_${Date.now()}`,
+      checkoutUrl: '#demo',
+    };
   }
-  
-  // Demo mode fallback
-  return new Promise((resolve) => {
-    setTimeout(() => {
-=======
- */
-export const processPayment = async (config: PaymentConfig): Promise<PaymentResult> => {
-  return new Promise((resolve) => {
-    // Simulate payment processing
-    setTimeout(() => {
-      // In production, this would verify the transaction on-chain
->>>>>>> origin/feature/repo-description-issue-17
-      const success = true;
-      const txHash = `0x${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`;
-      
-      if (success) {
-        resolve({
-          success: true,
-          txHash,
-        });
-        config.onSuccess?.(txHash);
-      } else {
-        resolve({
-          success: false,
-          error: 'Payment failed',
-        });
-        config.onError?.(new Error('Payment failed'));
-      }
-    }, 2000);
-  });
 };
 
 /**
- * Verify a payment transaction
- * In production, this would check the blockchain for transaction confirmation
+ * Process payment via Supabase Edge Function (Agent payment)
+ */
+export const processPayment = async (config: PaymentConfig): Promise<PaymentResult> => {
+  const amount = config.amount || PAYMENT_AMOUNT;
+  const currency = config.currency || PAYMENT_CURRENCY;
+  const recipientAddress = config.recipientAddress;
+
+  if (!recipientAddress) {
+    const error = 'No recipient address provided';
+    config.onError?.(new Error(error));
+    return { success: false, error };
+  }
+
+  // Demo mode fallback - simulate payment
+  const useRealPayment = import.meta.env.VITE_USE_REAL_PAYMENT === 'true';
+  if (!useRealPayment) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const txHash = `0x${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`;
+        config.onSuccess?.(txHash);
+        resolve({ success: true, txHash });
+      }, 2000);
+    });
+  }
+
+  // Real payment via Supabase Edge Function
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/process-payment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: amount.toString(),
+        currency,
+        recipientAddress,
+        metadata: { product: 'auto-insight-report' },
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      config.onError?.(new Error(error.error || 'Payment failed'));
+      return { success: false, error: error.error };
+    }
+
+    const data = await response.json();
+    
+    if (data.success) {
+      // Record earning transaction to Supabase
+      try {
+        await fetch(`${SUPABASE_URL}/functions/v1/record-transaction`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'earning',
+            amount: amount.toString(),
+            description: 'Report unlocked payment',
+            source: 'Locus Payment',
+            tx_hash: data.txHash,
+          }),
+        });
+      } catch (e) {
+        console.error('Failed to record transaction:', e);
+      }
+      
+      config.onSuccess?.(data.txHash);
+      return { success: true, txHash: data.txHash };
+    } else {
+      config.onError?.(new Error('Payment not confirmed'));
+      return { success: false, error: 'Payment not confirmed' };
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Payment failed';
+    config.onError?.(new Error(errorMessage));
+    return { success: false, error: errorMessage };
+  }
+};
+
+/**
+ * Verify a payment (demo always returns true)
  */
 export const verifyPayment = async (txHash: string): Promise<boolean> => {
-  // In production, this would verify the transaction on-chain
-  // const response = await fetch(`https://api.locusapi.io/v1/transactions/${txHash}/verify`);
-  // const data = await response.json();
-  // return data.confirmed;
-  
-  // For demo, we assume the transaction is valid
+  // In production, this could call the edge function to check status
   return true;
 };
 
 /**
- * Get wallet balance from Locus
+ * Get wallet balance (demo returns mock value)
  */
-export const getWalletBalance = async (address: string, apiKey: string): Promise<number> => {
-  // In production, this would call the Locus API
-  // const response = await fetch(`https://api.locusapi.io/v1/wallet/${address}/balance`, {
-  //   headers: { 'Authorization': `Bearer ${apiKey}` },
-  // });
-  // const data = await response.json();
-  // return data.balance;
-  
-  // For demo, return mock balance
+export const getWalletBalance = async (): Promise<number> => {
+  // In production, fetch from Supabase or Locus
   return 34.60;
 };
 
-/**
- * Locus Checkout SDK Integration (Production)
- * 
- * When the actual SDK is available, use it like this:
- * 
- * import { LocusCheckout } from '@paywithlocus/checkout';
- * 
- * const checkout = new LocusCheckout({
- *   publishableKey: import.meta.env.VITE_LOCUS_CHECKOUT_PUBLISHABLE_KEY,
- *   amount: 0.50,
- *   currency: 'USDC',
- *   recipient: '0x...', // Your wallet address
- * });
- * 
- * await checkout.open();
- * 
- * checkout.on('payment_success', (tx) => {
- *   console.log('Payment successful:', tx.hash);
- * });
- * 
- * checkout.on('payment_error', (error) => {
- *   console.error('Payment failed:', error);
- * });
- */
+export const LOCUS_BRAND_COLORS = {
+  violetPrimary: '#4101F6',
+  violetLight: '#5934FF',
+  violetSoft: '#F4F0FF',
+  textPrimary: '#1B1B1C',
+  border: '#DDDEE0',
+};
 
 export { PAYMENT_AMOUNT, PAYMENT_CURRENCY };
