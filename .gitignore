@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Environment variables (secrets - NEVER commit)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+*.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +30,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Supabase
+supabase/.env
+supabase/config.local.toml
+
+# Vercel
+.vercel
