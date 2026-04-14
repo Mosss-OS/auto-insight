@@ -176,8 +176,8 @@ const ReportView = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-center pb-8">
             <div className="bg-background/90 backdrop-blur text-foreground px-6 py-3 rounded-full font-semibold shadow-lg">
               <Lock className="inline h-4 w-4 mr-2" />
-              Unlock Full Report
-            </div>
+Unlock Full Report
+      </div>
           </div>
         )}
       </div>

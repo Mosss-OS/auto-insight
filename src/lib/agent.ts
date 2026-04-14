@@ -63,6 +63,7 @@ export interface GeneratedReport {
  */
 export const generateReport = async (options: GenerateReportOptions): Promise<GeneratedReport> => {
   const { topic, previousReportContext } = options;
+<<<<<<< HEAD
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
   
   // Use real Claude API if key is provided
@@ -103,6 +104,39 @@ export const generateReport = async (options: GenerateReportOptions): Promise<Ge
       console.error('Claude API error:', err);
     }
   }
+=======
+  
+  // In production, this would call the actual Claude API
+  // const response = await anthropic.messages.create({
+  //   model: 'claude-3-5-sonnet-20241022',
+  //   max_tokens: 1024,
+  //   messages: [{
+  //     role: 'user',
+  //     content: `You are AutoInsight, an AI agent that generates weekly fintech and Web3 research reports.
+  // 
+  // Generate a ~500-word research report about "${topic}".
+  // 
+  // Include:
+  // - Key developments and news from the past week
+  // - Market data and statistics
+  // - Regulatory updates if relevant
+  // - Future outlook and predictions
+  // - At least 3 specific data points or statistics
+  // 
+  // Format with clear paragraphs. Do not use markdown formatting.
+  // 
+  // ${previousReportContext ? `Context from previous report:\n${previousReportContext}` : ''}
+  // 
+  // Return in JSON format:
+  // {
+  //   "title": "Report title",
+  //   "summary": "2-3 sentence summary",
+  //   "content": "Full report content (~500 words, separated by double newlines)",
+  //   "sources": ["source1", "source2", "source3"]
+  // }`,
+  //   }],
+  // });
+>>>>>>> origin/feature/repo-description-issue-17
   
   // For demo, return a mock report
   const now = new Date();
@@ -214,6 +248,7 @@ export const selectApisToPurchase = (topic: string, maxBudget: number): ApiPurch
  * Fetch market data using purchased APIs
  */
 export const fetchMarketData = async (apis: ApiPurchase[]): Promise<Record<string, unknown>> => {
+<<<<<<< HEAD
   const apiKey = import.meta.env.VITE_LOCUS_API_KEY;
   
   // Use real Locus API if available
@@ -242,6 +277,10 @@ export const fetchMarketData = async (apis: ApiPurchase[]): Promise<Record<strin
   }
   
   // Demo mode - return mock data
+=======
+  // In production, this would call the actual APIs
+  // For demo, return mock data
+>>>>>>> origin/feature/repo-description-issue-17
   return {
     timestamp: new Date().toISOString(),
     apisUsed: apis.map(a => a.name),

@@ -301,7 +301,7 @@ const DashboardView = () => {
             Spent on APIs
           </div>
         </div>
-      </div>
+</div>
 
       {/* Net Profit Chart */}
       <div className="mb-10">
@@ -324,12 +324,18 @@ const DashboardView = () => {
                 strokeWidth={2}
                 name="Net Profit"
               />
-              <defs>
-                <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
+              <Area 
+                type="monotone" 
+                dataKey="spent" 
+                stroke="#f59e0b" 
+                fill="url(#spendGradient)" 
+                strokeWidth={2}
+                name="Spent"
+              />
+              <Legend 
+                wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }}
+                formatter={(value: string) => <span className="text-muted-foreground">{value}</span>}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>

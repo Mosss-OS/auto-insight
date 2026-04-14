@@ -63,6 +63,7 @@ export const initializeCheckout = async (config: PaymentConfig): Promise<{ sessi
 /**
  * Process a USDC payment
  * In demo mode, this simulates a successful payment after 2 seconds
+<<<<<<< HEAD
  * When real API key is provided, uses actual Locus API
  */
 export const processPayment = async (config: PaymentConfig): Promise<PaymentResult> => {
@@ -104,6 +105,14 @@ export const processPayment = async (config: PaymentConfig): Promise<PaymentResu
   // Demo mode fallback
   return new Promise((resolve) => {
     setTimeout(() => {
+=======
+ */
+export const processPayment = async (config: PaymentConfig): Promise<PaymentResult> => {
+  return new Promise((resolve) => {
+    // Simulate payment processing
+    setTimeout(() => {
+      // In production, this would verify the transaction on-chain
+>>>>>>> origin/feature/repo-description-issue-17
       const success = true;
       const txHash = `0x${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`;
       

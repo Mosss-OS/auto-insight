@@ -1,5 +1,8 @@
 import { create } from 'zustand';
+<<<<<<< HEAD
 import { loadAgentState, saveAgentState, clearAgentState, PersistedState } from '@/lib/persistence';
+=======
+>>>>>>> origin/feature/repo-description-issue-17
 
 export interface Transaction {
   id: string;
