@@ -1,0 +1,164 @@
+Software Requirements Specification (SRS)
+1. Introduction
+1.1 Purpose
+AutoInsight is an autonomous AI research agent that generates weekly fintech and Web3 industry research reports. It demonstrates a complete self-sustaining economic loop by earning money through micropayments and spending those earnings autonomously on data and AI services.
+The primary goal is to showcase how AI agents can participate as real economic actors using the Locus ecosystem — earning via PayWithLocus Checkout SDK and spending via the Locus API catalog. This aligns perfectly with the Paygentic Week 1 track: "Using PayWithLocus to leverage our suite" and the hackathon theme "Hack An Agent That Makes YOU Money!".
+1.2 Scope
+AutoInsight will:
+
+Generate high-quality ~500-word research reports on fintech/Web3 topics using Claude.
+Offer a free preview (first ~100 words) and unlock the full report after a $0.50 USDC micropayment.
+Autonomously use earnings stored in a Locus wallet to pay for data APIs from the Locus catalog.
+Provide a transparent dashboard showing earnings, spends, wallet balance, and net profit.
+Support hackathon demo flows (including a manual "Advance Week" trigger).
+
+Out of scope (for hackathon MVP): Full production cron jobs, advanced ML model training, multi-user authentication beyond demo, or complex governance policies.
+1.3 Definitions, Acronyms, and Abbreviations
+
+Locus: AI agent payment infrastructure (paywithlocus.com).
+PayWithLocus Checkout SDK: Stripe-style checkout for accepting USDC payments into Locus wallets.
+Locus API Catalog: Pay-per-use APIs (news, market data, search, etc.) that agents can autonomously purchase.
+USDC: USD Coin (stablecoin used for micropayments).
+Autonomous Loop: Earn (from readers) → Store in Locus wallet → Spend on Locus APIs → Generate better reports.
+
+1.4 References
+
+Locus Documentation: https://docs.paywithlocus.com/
+PayWithLocus Checkout SDK integration guides
+Anthropic Claude API documentation
+Next.js 15 App Router docs
+Hackathon Devfolio page: https://paygentic-week1.devfolio.co/
+
+1.5 Overview
+This SRS covers functional & non-functional requirements, system architecture, data flow, and user interfaces.
+2. Overall Description
+2.1 Product Perspective
+AutoInsight transforms traditional static research into a living, self-funding AI agent. Instead of relying on subscriptions or sponsorships, the agent earns directly from users and reinvests in its own intelligence using Locus tools.
+2.2 Product Functions
+
+Topic-based report generation (user-selected or autonomous).
+Tiered content access (free preview + paid full report).
+Micropayment processing via PayWithLocus.
+Autonomous data acquisition and report regeneration.
+Real-time financial dashboard with earn/spend transparency.
+PDF export of reports.
+
+2.3 User Classes and Characteristics
+
+End Users / Readers: Fintech & Web3 enthusiasts, investors, developers, analysts — want quick, affordable insights.
+Demo / Hackathon Judges: Need to see the full earn → spend → generate loop clearly.
+Agent Owner (You): Manages the Locus wallet and spending policies.
+
+2.4 Operating Environment
+
+Web browser (Chrome, Firefox, Safari)
+Deployed on Vercel
+Backend: Next.js API routes
+Payments & APIs: Locus platform (USDC on supported chains)
+
+2.5 Design and Implementation Constraints
+
+Must use PayWithLocus Checkout SDK for payments.
+Must integrate Locus API catalog for autonomous data spends.
+Frontend: Next.js 15 + Tailwind CSS + shadcn/ui
+AI: Anthropic Claude (optionally via Locus)
+No heavy external dependencies beyond listed stack.
+
+2.6 Assumptions and Dependencies
+
+Access to Locus beta credits and SDK.
+Availability of relevant APIs in the Locus catalog (news, market data, search).
+Claude API key (or Locus-routed equivalent).
+USDC wallet funding for demo purposes.
+
+3. Specific Requirements
+3.1 Functional Requirements
+3.1.1 User-Facing Features
+FR1: Report Browsing & Preview
+
+Users can select a topic/category (DeFi, RWA, Stablecoins, AI x Crypto, etc.) or let the agent choose a trending topic.
+Display free preview: first ~100 words + engaging teaser.
+"Unlock Full Report" button triggers PayWithLocus checkout for $0.50 USDC.
+
+FR2: Payment & Content Unlock
+
+Integrate PayWithLocus Checkout SDK for seamless $0.50 USDC payment.
+On successful payment confirmation (via webhook/polling), instantly display the full 500-word report.
+Include sources, key insights, and a simple data visualization (chart).
+
+FR3: Report Generation
+
+Use Claude to generate well-structured 500-word reports.
+Incorporate fresh data obtained from paid Locus APIs.
+Support PDF download of the full report.
+
+FR4: Archive
+
+Show list of past weekly reports with dates and topics.
+
+3.1.2 Autonomous Agent Features (Core Winning Element)
+FR5: Autonomous Economic Loop
+
+Backend agent checks Locus wallet balance and recent earnings.
+Autonomously selects 3–5 relevant data APIs from Locus catalog.
+Pays for them using funds from the Locus wallet.
+Feeds purchased data into Claude to generate the next report.
+Logs every spend with details (e.g., "$0.04 on DeFi news API").
+
+FR6: Demo Controls
+
+Prominent "Advance to Next Week" button that triggers the full autonomous cycle (for hackathon judging).
+Optional spending policy settings (e.g., max weekly budget).
+
+3.1.3 Dashboard
+FR7: Financial Transparency Dashboard
+
+Total earnings from all micropayments.
+Total spent on Locus APIs and AI calls (with breakdown).
+Current Locus wallet balance.
+Transaction history (earnings + spends).
+Visual charts (earn vs spend over simulated weeks).
+Agent status summary (e.g., "This week: spent $0.21, earned $4.50 → Net +$4.29").
+
+3.2 Non-Functional Requirements
+
+Performance: Report generation < 15 seconds after payment; dashboard loads < 2 seconds.
+Usability: Clean, modern fintech aesthetic; mobile-responsive; intuitive flow.
+Reliability: Graceful error handling for payment failures or API spend issues.
+Security: Secure handling of payment confirmations; no sensitive keys exposed client-side.
+Scalability: Designed for hackathon demo (not production scale).
+Maintainability: Clean code with comments on all Locus integration points.
+Look & Feel: Dark mode friendly, professional, trustworthy branding with "AutoInsight" logo.
+
+3.3 External Interface Requirements
+
+PayWithLocus Checkout SDK: Drop-in integration for checkout UI and payment confirmation.
+Locus API Catalog: Authenticated calls for paid data endpoints (news, market data, etc.).
+Claude API: Structured prompting for consistent report quality.
+Recharts: For dashboard visualizations.
+@react-pdf/renderer: For PDF export.
+
+4. System Architecture
+
+Frontend: Next.js 15 App Router + React components (pages: Home, Report Viewer, Dashboard).
+Backend: Next.js API routes handling payments, agent logic, and data orchestration.
+Data Flow:
+User requests report → Preview shown.
+Payment via PayWithLocus → Funds to project wallet.
+Agent detects earnings → Pays Locus APIs → Fetches data.
+Claude generates report using paid data.
+Dashboard reflects updated earn/spend metrics.
+
+
+5. Data Models (High-Level)
+
+Report: { id, topic, date, previewText, fullContent, sources, chartData }
+Transaction: { id, type (earn/spend), amount, description, timestamp, apiEndpoint? }
+Wallet: { balance, totalEarned, totalSpent }
+
+6. Future Enhancements (Post-Hackathon)
+
+Real cron-based weekly generation.
+Multi-topic subscriptions.
+Advanced spending policies and agent governance.
+Integration with more Locus tools (e.g., x402 payments, escrow).

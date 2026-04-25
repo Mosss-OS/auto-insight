@@ -1,0 +1,72 @@
+Core Objective:
+Build a polished, full-featured vite/react.js and supabase edge function application called AutoInsight — an autonomous AI agent that generates weekly fintech & Web3 industry research reports. The agent earns real money through $0.50 USDC micropayments via Locus Checkout and autonomously reinvests those earnings by paying for data APIs from the Locus API catalog to fuel the next report. This demonstrates a complete self-sustaining economic loop.
+Important Rebranding:
+The project was previously referred to as ContentAgent. Update all references, folder names (if applicable), UI text, titles, meta tags, headings, buttons, and code comments from "ContentAgent" to AutoInsight. Use "AutoInsight" consistently as the product name throughout the entire application.
+Key Features to Implement / Extend:
+
+Report Generation
+Use Anthropic Claude API (ideally routed through Locus API catalog when possible) to generate a high-quality ~500-word research report focused on fintech/Web3 topics.
+Allow users to select a topic or category (DeFi, RWA, Stablecoins, AI x Crypto, Bitcoin Ecosystem, etc.) or let the agent pick a trending topic autonomously.
+Free preview: Show the first ~100 words + a compelling teaser.
+Full report unlocks only after successful $0.50 USDC payment.
+
+Micropayments with Locus
+Integrate the official PayWithLocus Checkout SDK for seamless $0.50 USDC payments.
+On payment confirmation (via webhook or polling), immediately display the full 500-word report.
+Include sources, key insights, and a simple generated chart (using data from paid APIs).
+
+Autonomous Agent Loop (The Winning Feature)
+Create a backend agent (using Next.js API routes) that can run in "autonomous mode":
+Check the project's Locus wallet balance and recent earnings.
+Autonomously decide and pay for 3–5 relevant data APIs from the Locus API catalog (examples: news/search APIs, market data like CoinGecko/Alpha Vantage equivalents, crypto news feeds, etc.).
+Use the freshly purchased data + Claude to generate the next weekly report.
+Simulate or trigger weekly generation with a prominent "Advance to Next Week" button (for hackathon demo purposes) plus optional cron simulation.
+
+Log every spend with clear details (e.g., "Spent $0.04 on latest DeFi news via Locus Search API").
+
+Dashboard & Transparency
+Beautiful dashboard showing:
+Total earnings from all reader payments
+Total spent on data APIs and AI calls (with breakdown)
+Current Locus wallet balance
+Transaction history (earnings + spends)
+Net profit / loss
+Simple charts (using Recharts or similar) visualizing earn vs spend over simulated weeks
+Agent status: "This week AutoInsight autonomously spent $0.21 on market data and earned $4.50 from readers → Net +$4.29"
+
+Add basic spending policy controls (demo only): e.g., max weekly data budget slider.
+
+UI/UX Requirements
+Modern, clean fintech/Web3 aesthetic using Tailwind CSS + shadcn/ui components.
+Responsive design, dark mode friendly.
+Smooth flow: Browse reports → Free preview → Pay $0.50 USDC via Locus → Instant full report unlock.
+One-click "Download PDF" for the full report.
+Archive of past weekly reports.
+Clear branding: Hero section explaining "AutoInsight — The AI Research Agent That Earns & Reinvests Its Own Money".
+
+Technical Stack
+vite + React
+Tailwind CSS + shadcn/ui
+Locus Checkout SDK for payments
+Locus API catalog for data and (optionally) AI calls
+Anthropic Claude API
+State management: Zustand or Context (keep it simple)
+Charts: Recharts
+PDF generation: @react-pdf/renderer or similar
+Deploy-ready on Vercel
+
+Polish & Hackathon-Winning Touches
+Make the autonomous loop clearly visible and impressive in the demo.
+Add loading states, success animations after payment, and real transaction feedback.
+Include a short "How AutoInsight Works" section explaining the earn → spend → generate cycle.
+Ensure the demo can run end-to-end with the free Locus credits provided by the hackathon.
+Optimize for a 60-second live demo: preview → pay → full report → dashboard update → advance week → see agent spend and generate next report.
+
+
+Deliverables:
+
+Complete, production-ready code structure.
+Clear comments explaining Locus integration points.
+Instructions in README.md for setting up Locus SDK, API keys, and running the autonomous loop demo.
+
+Start by updating all existing code to the new name AutoInsight, then implement or enhance the autonomous agent loop, improved dashboard, topic selection, PDF export, and visual transaction history. Make this the strongest possible demonstration of an agent that makes and spends real money using the Locus ecosystem.
