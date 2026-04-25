@@ -147,8 +147,8 @@ export const generateReport = async (options: GenerateReportOptions): Promise<Ge
   }
   
   // For demo, return a mock report
-  const now = new Date();
-  const weekNum = Math.ceil((now.getTime() - new Date('2026-01-01').getTime()) / (7 * 24 * 60 * 60 * 1000));
+  const demoDate = new Date();
+  const weekNum = Math.ceil((demoDate.getTime() - new Date('2026-01-01').getTime()) / (7 * 24 * 60 * 60 * 1000));
   const weekStart = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
   const weekEnd = now;
   
