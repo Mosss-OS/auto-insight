@@ -1,1 +1,1 @@
-// Implementation for issue 718
+// Implementation for issue
