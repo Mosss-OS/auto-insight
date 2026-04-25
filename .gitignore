@@ -37,3 +37,4 @@ supabase/config.local.toml
 
 # Vercel
 .vercel
+.env*.local
