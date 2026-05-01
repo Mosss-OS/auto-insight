@@ -7,7 +7,7 @@
  * - Wallet balance management
  */
 
-const GROQ_API_BASE = 'https://api.groq.com/openai/v1';
+const OPENROUTER_BASE = 'https://openrouter.ai/api/v1';
 
 // Cache for generated reports to avoid redundant API calls
 const reportCache = new Map<string, { report: GeneratedReport; timestamp: number }>();
@@ -67,25 +67,30 @@ export interface GeneratedReport {
  */
 export const generateReport = async (options: GenerateReportOptions): Promise<GeneratedReport> => {
   const { topic } = options;
-  const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-  
+  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || import.meta.env.VITE_GROQ_API_KEY;
+   
   // Check cache first
   const cacheKey = `${topic}-${apiKey ? 'key' : 'demo'}`;
   const cached = reportCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
     return cached.report;
   }
-  
+   
   // Rate limiting
   const now = Date.now();
   if (now - lastRequestTime < MIN_REQUEST_INTERVAL_MS) {
     await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_INTERVAL_MS - (now - lastRequestTime)));
   }
   lastRequestTime = Date.now();
-  
+   
   if (apiKey) {
     try {
-      const response = await fetch(`${GROQ_API_BASE}/chat/completions`, {
+      // Use OpenRouter if key is provided, fallback to Groq format
+      const baseUrl = import.meta.env.VITE_OPENROUTER_API_KEY 
+        ? 'https://openrouter.ai/api/v1'
+        : 'https://api.groq.com/openai/v1';
+      
+      const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -99,7 +104,10 @@ export const generateReport = async (options: GenerateReportOptions): Promise<Ge
             role: 'user',
             content: `Generate a ~500-word research report about "${topic}". Include key developments, market data, and regulatory updates. Return JSON format: {"title": "...", "summary": "...", "content": "...", "sources": ["..."]}`
           }],
-          model: 'llama-3.3-70b-versatile',
+          // OpenRouter supports 300+ models - default to a fast, cost-effective model
+          model: import.meta.env.VITE_OPENROUTER_API_KEY 
+            ? 'google/gemini-2.5-flash'  // Fast, cheap via OpenRouter
+            : 'llama-3.3-70b-versatile',
           temperature: 0.5,
           max_completion_tokens: 1024,
         }),
